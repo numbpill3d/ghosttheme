@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GHOST.MACHINE</title>
+    <style>
+        :root {
+            --static-color: rgba(255, 255, 255, 0.1);
+            --ghost-blue: #7EB2DD;
+            --spirit-green: #39FF14;
+            --warning-red: #FF3333;
+            --interface-gray: #333;
+            --ectoplasm-glow: #7EB2DD80;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Lucida Console", Monaco, monospace;
+        }
+
+        body {
+            background-color: #000;
+            color: var(--ghost-blue);
+            min-height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .static-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23noise)"/></svg>');
+            opacity: 0.1;
+            pointer-events: none;
+            animation: staticFlicker 0.5s infinite;
+        }
+
+        .interface-container {
+            display: grid;
+            grid-template-columns: 250px 1fr 300px;
+            grid-template-rows: 60px 1fr;
+            gap: 10px;
+            padding: 20px;
+            height: 100vh;
+        }
+
+        .status-bar {
+            grid-column: 1 / -1;
+            border: 1px solid var(--ghost-blue);
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.8);
+        }
+
+        .file-system {
+            border: 1px solid var(--ghost-blue);
+            padding: 10px;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.8);
+        }
+
+        .main-terminal {
+            border: 1px solid var(--ghost-blue);
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+            background: rgba(0, 0, 0, 0.8);
+        }
+
+        .monitoring-panel {
+            border: 1px solid var(--ghost-blue);
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.8);
+        }
+
+        .seance-circle {
+            width: 200px;
+            height: 200px;
+            border: 2px solid var(--ghost-blue);
+            border-radius: 50%;
+            margin: 20px auto;
+            position: relative;
+            animation: pulse 4s infinite;
+        }
+
+        .seance-circle::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 80%;
+            height: 80%;
+            transform: translate(-50%, -50%);
+            border: 1px solid var(--ghost-blue);
+            border-radius: 50%;
+        }
+
+        .waveform {
+            height: 100px;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .wave {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--ghost-blue);
+            transform-origin: left center;
+            animation: waveform 2s infinite;
+        }
+
+        .presence-meter {
+            height: 20px;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--ghost-blue);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .presence-level {
+            height: 100%;
+            width: 60%;
+            background: var(--ghost-blue);
+            opacity: 0.5;
+            animation: fluctuate 4s infinite;
+        }
+
+        .folder {
+            padding: 5px;
+            cursor: pointer;
+        }
+
+        .folder:hover {
+            background: rgba(126, 178, 221, 0.1);
+        }
+
+        .file {
+            padding: 5px 5px 5px 20px;
+            cursor: pointer;
+            opacity: 0.8;
+        }
+
+        .file:hover {
+            opacity: 1;
+            background: rgba(126, 178, 221, 0.1);
+        }
+
+        @keyframes staticFlicker {
+            0% { opacity: 0.05; }
+            50% { opacity: 0.1; }
+            100% { opacity: 0.05; }
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(126, 178, 221, 0.2); }
+            50% { box-shadow: 0 0 40px rgba(126, 178, 221, 0.4); }
+        }
+
+        @keyframes waveform {
+            0% { transform: scaleX(1) translateY(-50%); }
+            50% { transform: scaleX(0.5) translateY(-50%); }
+            100% { transform: scaleX(1) translateY(-50%); }
+        }
+
+        @keyframes fluctuate {
+            0% { width: 60%; }
+            50% { width: 40%; }
+            100% { width: 60%; }
+        }
+
+        .alert {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background: rgba(255, 51, 51, 0.2);
+            border: 1px solid var(--warning-red);
+            color: var(--warning-red);
+            animation: fadeInOut 4s forwards;
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateY(-20px); }
+            10% { opacity: 1; transform: translateY(0); }
+            90% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-20px); }
+        }
+
+        @media (max-width: 768px) {
+            .interface-container {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto auto;
+                gap: 10px;
+                padding: 10px;
+            }
+
+            .status-bar {
+                grid-column: 1 / -1;
+            }
+
+            .file-system, .main-terminal, .monitoring-panel {
+                grid-column: 1 / -1;
+            }
+
+            .seance-circle {
+                width: 150px;
+                height: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="static-overlay"></div>
+    <div class="interface-container">
+        <div class="status-bar">
+            <div>GHOST.MACHINE v1.0.13</div>
+            <div>SPIRIT_LINK: ACTIVE</div>
+            <div>EMF_LEVEL: HIGH</div>
+            <div>PROTECTION: ENABLED</div>
+        </div>
+
+        <div class="file-system">
+            <div class="folder">├── SPIRIT_TOOLS/</div>
+            <div class="file" data-content="INITIALIZING SÉANCE PROTOCOLS...">├── seance.exe</div>
+            <div class="file" data-content="ANALYZING EVP FREQUENCIES...">├── evp_analyzer.sys</div>
+            <div class="file" data-content="DEBUGGING GHOST ACTIVITY...">├── ghost_debug.log</div>
+            <div class="file" data-content="DETECTING SPIRIT PRESENCE...">└── presence_detect.dat</div>
+            
+            <div class="folder">├── NECRO_PROGRAMS/</div>
+            <div class="file" data-content="COMMUNICATING WITH SPIRITS...">├── spirit_communicator</div>
+            <div class="file" data-content="MAPPING THE AFTERLIFE...">├── afterlife_mapper</div>
+            <div class="file" data-content="VISUALIZING PRESENCE...">└── presence_visualizer</div>
+            
+            <div class="folder">└── SYSTEM_PROTOCOLS/</div>
+            <div class="file" data-content="ACTIVATING PROTECTION CIRCLE...">├── protection_circle.sys</div>
+            <div class="file" data-content="BANISHING NEGATIVE ENERGIES...">├── banishing.exe</div>
+            <div class="file" data-content="CLEANSING THE AREA...">└── cleansing.cmd</div>
+        </div>
+
+        <div class="main-terminal">
+            <div style="margin-bottom: 20px;">
+                > INITIALIZING SÉANCE PROTOCOLS...
+                > ESTABLISHING SPIRIT LINK...
+                > CALIBRATING EVP FREQUENCIES...
+                > READY FOR COMMUNICATION
+            </div>
+            
+            <div class="seance-circle"></div>
+            
+            <div class="waveform">
+                <div class="wave"></div>
+            </div>
+            
+            <div class="alert">! ANOMALOUS PRESENCE DETECTED !</div>
+        </div>
+
+        <div class="monitoring-panel">
+            <div>
+                <h3>SPIRIT PRESENCE</h3>
+                <div class="presence-meter">
+                    <div class="presence-level"></div>
+                </div>
+            </div>
+            
+            <div>
+                <h3>EVP ACTIVITY</h3>
+                <div class="waveform">
+                    <div class="wave"></div>
+                </div>
+            </div>
+            
+            <div>
+                <h3>PROTECTION STATUS</h3>
+                <div class="presence-meter">
+                    <div class="presence-level" style="width: 90%; background: var(--spirit-green);"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Add dynamic UI elements
+        document.querySelectorAll('.file').forEach(file => {
+            file.addEventListener('click', () => {
+                const alert = document.createElement('div');
+                alert.className = 'alert';
+                alert.textContent = `EXECUTING: ${file.textContent.trim()}`;
+                document.querySelector('.main-terminal').appendChild(alert);
+                
+                setTimeout(() => alert.remove(), 4000);
+
+                // Update main terminal content
+                const content = file.getAttribute('data-content');
+                document.querySelector('.main-terminal > div:first-child').textContent = `> ${content}`;
+            });
+        });
+
+        // Simulate random EVP activity
+        setInterval(() => {
+            const waveforms = document.querySelectorAll('.wave');
+            waveforms.forEach(wave => {
+                wave.style.transform = `scaleX(${0.5 + Math.random() * 0.5}) translateY(-50%)`;
+            });
+        }, 100);
+    </script>
+</body>
+</html>
